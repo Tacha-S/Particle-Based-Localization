@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding:utf-8 -*-
+
 from detector import Detector
 from particle_filter import ParticleFilter, Particle
 from pf_viz import PFViz
@@ -82,7 +85,7 @@ def metric(particle, history):
 def main():
 	rospy.init_node("particle_based_tracking")
 
-	detector = Detector(visualize=False)
+	detector = Detector(visualize=False, modelfileName=rospy.get_param('~model'))
 	transformer = Transformer("transformer")
 	pf = ParticleFilter(500, HParticle, metric, explorationFactor=0.1, noiseFactor=0.05, averageType="weighted")
 	pf.generateParticles()
@@ -95,44 +98,47 @@ def main():
 			detector.getImage()
 			detector.processImage()
 			pixels = detector.centroids[:]
+			if pixels:
 
-			startPoint, endPoints = transformer.transform(pixels)
-			history.append(tuple((startPoint[:-1], np.asarray(endPoints)[:,:-1])))
-			T0 = time.time()
-			for _ in range(0, numItersPerSample):
-				print "Updating particle filter",
+				startPoint, endPoints = transformer.transform(pixels)
+				rospy.loginfo(len(startPoint))
+				rospy.loginfo(np.asarray(endPoints).shape)
+				history.append(tuple((startPoint[:-1], np.asarray(endPoints)[:,:-1])))
+				T0 = time.time()
+				for _ in range(0, numItersPerSample):
+					print "Updating particle filter",
 
-				print "\tmeasuring",
-				t0 = time.time()
-				pf.measureParticles(history)
-				t1 = time.time()
-				print "dt=%f" % (t1-t0),
+					print "\tmeasuring",
+					t0 = time.time()
+					pf.measureParticles(history)
+					t1 = time.time()
+					print "dt=%f" % (t1-t0),
 
-				print "\tweighting",
-				t0 = time.time()
-				pf.calculateWeights()
-				t1 = time.time()
-				print "dt=%f" % (t1-t0),
+					print "\tweighting",
+					t0 = time.time()
+					pf.calculateWeights()
+					t1 = time.time()
+					print "dt=%f" % (t1-t0),
 
-				print "\tpredicting",
-				t0 = time.time()
-				prediction = pf.predict()
-				t1 = time.time()
-				print "dt=%f" % (t1-t0),
+					print "\tpredicting",
+					t0 = time.time()
+					prediction = pf.predict()
+					t1 = time.time()
+					print "dt=%f" % (t1-t0),
 
-				viz.update(history[-1])
+					viz.update(history[-1])
 
-				print "\tresampling",
-				t0 = time.time()
-				pf.resample()
-				t1 = time.time()
-				print "dt=%f" % (t1-t0),
+					print "\tresampling",
+					t0 = time.time()
+					pf.resample()
+					t1 = time.time()
+					print "dt=%f" % (t1-t0),
 
-				pf.update(None)
+					pf.update(None)
 
-				print
-			T1 = time.time()
-			print "Total particle filter update time %f" % (T1-T0)
+					print
+				T1 = time.time()
+				print "Total particle filter update time %f" % (T1-T0)
 		except KeyboardInterrupt:
 			break
 

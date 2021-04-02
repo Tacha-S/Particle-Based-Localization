@@ -39,8 +39,8 @@ class FakeDetector():
 		waiting = False
 		while True:
 			try:
-				stamp = self.tfListener.getLatestCommonTime("/head_camera_rgb_optical_frame", "/odom")
-				pos, quat = self.tfListener.lookupTransform("/head_camera_rgb_optical_frame", "/odom", stamp)
+				stamp = self.tfListener.getLatestCommonTime("/realsense_front_color_optical_frame", "/odom")
+				pos, quat = self.tfListener.lookupTransform("/realsense_front_color_optical_frame", "/odom", stamp)
 				matTransform = self.tfListener.fromTranslationRotation(pos, quat)
 
 				print "Got transform!"

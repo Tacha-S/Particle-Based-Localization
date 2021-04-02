@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+    <node name="particle_based_localization" pkg="particle_based_localization" type="main.py" output="screen">
+        <param name="model" value="$(find particle_based_localization)/resources/model.pickle"/>
+        <remap from="/head_camera/rgb/image_raw" to="/realsense_front/color/image_rect_color"/>
+    </node>
+</launch>
